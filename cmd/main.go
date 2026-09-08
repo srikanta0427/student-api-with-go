@@ -12,19 +12,18 @@ import (
 	"time"
 
 	"github.com/srikanta0427/student-api/internal/config"
+	"github.com/srikanta0427/student-api/internal/http/student"
 )
 
 func main() {
 	// load config
 	cfg := config.MustLoad()
-	fmt.Println("Config loaded successfully")
+	slog.Info("Config loaded successfully", slog.String("env", cfg.Env), slog.String("storagePath", cfg.StoragePath), slog.String("httpServerHost", cfg.HttpServer.Host), slog.String("httpServerPort", cfg.HttpServer.Port))
 
 	// setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to student api"))
-	})
+	router.HandleFunc("GET /api/students", student.New())
 
 	// setup server
 	server := http.Server{
@@ -34,6 +33,7 @@ func main() {
 
 	fmt.Println("Server started on port", cfg.HttpServer.Port)
 
+	// for graceful shutdown
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -46,12 +46,10 @@ func main() {
 
 	<-done
 
-	
 	slog.Info("Server stopped gracefully")
-	ctx , cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 
 	defer cancel()
-
 
 	err := server.Shutdown(ctx)
 
