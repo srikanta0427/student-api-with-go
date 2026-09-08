@@ -9,8 +9,8 @@ import (
 )
 
 type HttpServerConfig struct {
-	Port string						`yaml:"port"`
-	Host string						`yaml:"host"`
+	Port string	`yaml:"port" env-required: "true"`
+	Host string	`yaml:"host" env-required: "true"`				
 }
 
 type Config struct {
